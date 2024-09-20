@@ -22,7 +22,12 @@ const UserSchema = new Schema({
         trim: true,
         lowercase: true
     },
-
+    avatar: {
+        type: String,
+    },
+    coverImage: {
+        type: String
+    },
     password: {
         type: String,
         required: true,
@@ -49,7 +54,7 @@ UserSchema.methods.CheckPassword = async function (password) {
     const user = this;
     return await bcrypt.compare(password, user.password)
 }
-UserSchema.methods.GenerateAccessToken =  function () {
+UserSchema.methods.GenerateAccessToken = function () {
     return jwt.sign(
         {
             _id: this.id,
@@ -58,8 +63,9 @@ UserSchema.methods.GenerateAccessToken =  function () {
             username: this.username
         },
         process.env.ACCESS_TOKEN,
-        { expiresIn: process.env.ACCESS_TOKEN_EXPIRY
-    }
+        {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+        }
     )
 }
 UserSchema.methods.GenerateRefreshToken = function () {

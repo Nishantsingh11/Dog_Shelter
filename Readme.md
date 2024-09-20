@@ -6,8 +6,8 @@ Technologies Used: Node.js, Express.js, MongoDB
 ### Installation
 **Clone the Repository**:
 ```base
-git clone ....
-cd .///
+git clone https://github.com/Nishantsingh11/Dog_Shelter
+cd ./Backend
 ```
 
 **Install Dependencies**:

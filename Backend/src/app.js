@@ -27,7 +27,7 @@ app.use((err, req, res, next) => {
 app.use("/api/v1/user", userRouter)
 app.use("/api/v1/dog", dogRouter)
 
-app.post('/test', (req, res) => {
+app.get('/test', (req, res) => {
     console.log("Received test request");
     res.json({ message: "Test successful" });
 });

@@ -3,6 +3,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+import { uploadImage } from "../utils/cloudinary.js";
+
 const validateRequiredFields = (fields) => {
     for (const field of fields) {
         if (!field.value) {
@@ -31,12 +33,16 @@ const genrateAccessTokenAndRefreshToken = async (userId) => {
 const notFoundError = (message = "Resource not found") => {
     throw new ApiError(404, message);
 };
-const CreateUser = asyncHandler(async (req, res) => {
+export const CreateUser = asyncHandler(async (req, res) => {
     console.log("Received a request to /register in clt");
-
+    console.log("files:", req.files.avatar);
     const { name, email, password, username, confirm_password } = req.body;
     console.log("Request body:", req.body);
-
+    // loop the req.file 
+    const Avatar = req.files ? await uploadImage(req.files.avatar[0].path) : null;
+    const CoverImage = req.files ? await uploadImage(req.files.coverImage[0].path) : null
+    console.log("coverr image", CoverImage);
+    console.log("Avatar:", Avatar);
     try {
         validateRequiredFields([
             { value: name, name: "Name" },
@@ -48,15 +54,12 @@ const CreateUser = asyncHandler(async (req, res) => {
         if (password !== confirm_password) {
             throw new ApiError(400, "Password and confirm password do not match");
         }
-
         const exisingUser = await User.findOne({ email });
         if (exisingUser) {
             throw new ApiError(400, "User with this email already exists");
         }
-
-        const user = await User.create({ name, email, password, username });
+        const user = await User.create({ name, email, password, username, avatar: Avatar, coverImage: CoverImage });
         console.log("User created in the database:", user);
-
         res.status(201).json(new ApiResponse(201, user, "User created successfully"));
     } catch (error) {
         console.error("Error during user creation:", error);
@@ -80,7 +83,7 @@ export const LoginUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid credentials")
     }
 
-    const { accessToken, refreshToken } = await genrateAccessTokenAndRefreshToken(user._id)    
+    const { accessToken, refreshToken } = await genrateAccessTokenAndRefreshToken(user._id)
 
     const option = {
         httpOnly: false,
@@ -103,7 +106,7 @@ export const LogoutUser = asyncHandler(async (req, res) => {
 export const GetNewAccessToken = asyncHandler(async (req, res) => {
     const { incomingRefreshToken } = req.cookies.refreshToken || req.body
     console.log("incomingRefreshToken", incomingRefreshToken);
-    
+
     if (!incomingRefreshToken) {
         throw new ApiError(401, "Unauthorized")
     }
@@ -149,5 +152,24 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, user, "User fetched successfully"))
 })
 
+export const UpdateUserProfile = asyncHandler(async (req, res) => {
+    // get the user from auth middleware
+    // featch the user from the database
+    // if user then update the user profile
+    // save the user
+    // if not user then throw error
+    const { name } = req.body
+    const user = await User.findById(req.user._id)
+    if (!user) {
+        throw new ApiError(404, "User not found")
+    }
+    
+    const avatar = req.files ? await uploadImage(req.files.newAvatar[0].path) : user.avatar
+    const coverImage = req.files ? await uploadImage(req.files.newCoverImage[0].path) : user.coverImage
+    user.name = name
+    user.avatar = avatar
+    user.coverImage = coverImage
+    await user.save()
+    res.status(200).json(new ApiResponse(200, user, "User profile updated successfully"))
+})
 
-export { CreateUser }

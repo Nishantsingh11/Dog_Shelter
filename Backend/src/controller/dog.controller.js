@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import mongoose from "mongoose";
+import { uploadImage } from "../utils/cloudinary.js";
 const validateRequiredFields = (fields) => {
     for (const field of fields) {
         if (!field.value) {
@@ -13,7 +14,6 @@ const validateRequiredFields = (fields) => {
 const notFoundError = (message = "Resource not found") => {
     throw new ApiError(404, message);
 }
-
 const AddNewDog = asyncHandler(async (req, res) => {
     const { name, breed, age, description } = req.body;
     validateRequiredFields([
@@ -22,7 +22,16 @@ const AddNewDog = asyncHandler(async (req, res) => {
         { value: age, name: "Age" },
         { value: description, name: "Description" },
     ])
-    const dog = await Dog.create({ name, breed, age, description, owner: req.user._id });
+    // upload multiple images
+    const files = req.files;
+    let dogImages = [];
+    for (const file of files) {
+        const { path } = file;
+        const imageUrl = await uploadImage(path)
+        dogImages.push(imageUrl)
+    }
+    // console.log("dogImage", dogImage);
+    const dog = await Dog.create({ name, breed, age, dogImages, description, owner: req.user._id });
     res.status(201).json(new ApiResponse(201, dog, "Dog created successfully"))
 })
 
@@ -67,7 +76,7 @@ const GetDog = asyncHandler(async (req, res) => {
 
     const dog = await Dog.aggregate([
         { $match: { _id: objectId } },
-        
+
         {
             $lookup: {
                 from: "users",
@@ -75,7 +84,7 @@ const GetDog = asyncHandler(async (req, res) => {
                 foreignField: "_id",
                 as: "owner"
             },
-       
+
         },
         {
             $project: {

@@ -22,9 +22,9 @@ const DogSchema = new Schema({
         // type: String,
         required: true
     },
-    image: {
+    dogImages: [{
         type: String,
-    },
+    }],
     description: {
         type: String,
         required: true,
