@@ -15,23 +15,49 @@ const notFoundError = (message = "Resource not found") => {
     throw new ApiError(404, message);
 }
 const AddNewDog = asyncHandler(async (req, res) => {
-    const { name, breed, age, description } = req.body;
+    const { name, breed, age, description, gender, size, weight, disability, location, dateArrived, medicalNeeds, isHouseTrained, isGoodWithKids, isGoodWithOtherDogs, isGoodWithCats } = req.body;
+
     validateRequiredFields([
         { value: name, name: "Name" },
         { value: breed, name: "Breed" },
         { value: age, name: "Age" },
-        { value: description, name: "Description" },
+        {
+            value: description, name:
+                "Description"
+        },
+        { value: gender, name: "Gender" },
+        { value: size, name: "Size" },
+        { value: weight, name: "Weight" },
+        { value: location, name: "Location" },
+        { value: dateArrived, name: "Date Arrived" },
+
     ])
     // upload multiple images
     const files = req.files;
+    console.log("req",req);
+    
+    console.log("files", files);
+    console.log("req.files", req.files);
+
     let dogImages = [];
-    for (const file of files) {
-        const { path } = file;
-        const imageUrl = await uploadImage(path)
-        dogImages.push(imageUrl)
+    if (files) {
+        for (const file of files) {
+            const { path } = file;
+            const imageUrl = await uploadImage(path)
+            dogImages.push(imageUrl)
+        }
     }
+    console.log("dogImages", dogImages);
+    if (dogImages.length === 0) {
+        throw new ApiError(400, "Please upload at least one image")
+    }
+
     // console.log("dogImage", dogImage);
-    const dog = await Dog.create({ name, breed, age, dogImages, description, owner: req.user._id });
+    const dog = await Dog.create({
+        name, breed, age, dogImages, description, owner: req.user._id,
+        weight, size, gender,
+        disability, location, dateArrived, medicalNeeds, isHouseTrained, isGoodWithKids, isGoodWithOtherDogs, isGoodWithCats
+    });
     res.status(201).json(new ApiResponse(201, dog, "Dog created successfully"))
 })
 
@@ -54,6 +80,10 @@ const GetDogs = asyncHandler(async (req, res) => {
                 breed: 1,
                 age: 1,
                 description: 1,
+                dogImages: 1,
+
+
+
                 owner: {
                     name: 1,
                     email: 1
@@ -64,7 +94,8 @@ const GetDogs = asyncHandler(async (req, res) => {
     if (dogs.length === 0) {
         notFoundError("No dogs found")
     }
-    res.status(200).json(new ApiResponse(200, dogs, "Dogs fetched successfully"))
+    res.status(200).json(new ApiResponse(200,
+        dogs, "Dogs fetched successfully"))
 
 })
 
@@ -92,6 +123,22 @@ const GetDog = asyncHandler(async (req, res) => {
                 breed: 1,
                 age: 1,
                 description: 1,
+                weight: 1,
+                size: 1,
+                gender: 1,
+                disability: 1,
+                location: 1,
+                dateArrived: 1,
+                medicalNeeds: 1,
+                isHouseTrained: 1,
+                isGoodWithKids: 1,
+                isGoodWithOtherDogs: 1,
+                isGoodWithCats: 1,
+                dogImages: 1,
+                adopted: 1,
+                adoptedBy: 1,
+                adoptedAt: 1,
+
                 owner: {
                     name: 1,
                     email: 1
@@ -103,7 +150,7 @@ const GetDog = asyncHandler(async (req, res) => {
     if (dog.length === 0) {
         notFoundError("Dog not found")
     }
-    res.status(200).json(new ApiResponse(200, dog, "Dog fetched successfully"))
+    res.status(200).json(new ApiResponse(200, dog[0], "Dog fetched successfully"))
 
 })
 const UpdateDogDetails = asyncHandler(async (req, res) => {
@@ -161,5 +208,13 @@ const UpdateAdoptedStatus = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, dog, "Dog adopted successfully"))
 })
 
+const GetUserDogs = asyncHandler(async (req, res) => {
+    const dogs = await Dog.find({ owner: req.user._id })
+    if (dogs.length === 0) {
+        return res.status(200).json(new ApiResponse(200, [], "No dogs found"))
+    }
 
-export { AddNewDog, GetDogs, GetDog, UpdateDogDetails, DeleteDog, UpdateAdoptedStatus }
+    res.status(200).json(new ApiResponse(200, dogs, "Dogs fetched successfully"))
+})
+
+export { AddNewDog, GetDogs, GetDog, UpdateDogDetails, DeleteDog, UpdateAdoptedStatus, GetUserDogs }

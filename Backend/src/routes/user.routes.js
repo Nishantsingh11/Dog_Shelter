@@ -17,7 +17,7 @@ router.route("/register").post(
 
 router.route("/login").post(LoginUser)
 router.route("/logout").post(authMiddleWare, LogoutUser)
-router.route("/new-access-token").post(authMiddleWare, GetNewAccessToken)
+router.route("/new-access-token").post(GetNewAccessToken)
 router.route("/me").get(authMiddleWare, getCurrentUser)
 router.route("/change-password").post(authMiddleWare, changeCurrentPassword)
 router.route("/update-profile").patch(authMiddleWare, upload.fields([

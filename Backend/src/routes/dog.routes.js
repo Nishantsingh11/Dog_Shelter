@@ -1,4 +1,4 @@
-import { AddNewDog, DeleteDog, GetDog, GetDogs, UpdateAdoptedStatus, UpdateDogDetails } from "../controller/dog.controller.js"
+import { AddNewDog, DeleteDog, GetDog, GetDogs, UpdateAdoptedStatus, UpdateDogDetails, GetUserDogs } from "../controller/dog.controller.js"
 import { Router } from "express";
 import { authMiddleWare } from "../middlewares/auth.Midddleware.js"
 import { upload } from "../middlewares/multer.Middleware.js";
@@ -12,11 +12,11 @@ router.route("/add-dog").post(
     authMiddleWare,
     AddNewDog
 )
-router.route("/getdog/:id").get(GetDog)
+router.route("/get-dog/:id").get(GetDog)
 router.route("/update-dog/:id").patch(authMiddleWare, UpdateDogDetails)
 router.route("/delete/:id").delete(authMiddleWare, DeleteDog)
 router.route("/update-adopted-status/:id").patch(authMiddleWare, UpdateAdoptedStatus)
-
+router.route("/get-user-dogs").get(authMiddleWare, GetUserDogs)
 
 
 export default router

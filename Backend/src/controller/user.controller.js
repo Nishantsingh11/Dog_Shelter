@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+import jwt from "jsonwebtoken"
 import { uploadImage } from "../utils/cloudinary.js";
 
 const validateRequiredFields = (fields) => {
@@ -34,37 +34,27 @@ const notFoundError = (message = "Resource not found") => {
     throw new ApiError(404, message);
 };
 export const CreateUser = asyncHandler(async (req, res) => {
-    console.log("Received a request to /register in clt");
-    console.log("files:", req.files.avatar);
+
     const { name, email, password, username, confirm_password } = req.body;
-    console.log("Request body:", req.body);
     // loop the req.file 
     const Avatar = req.files ? await uploadImage(req.files.avatar[0].path) : null;
     const CoverImage = req.files ? await uploadImage(req.files.coverImage[0].path) : null
-    console.log("coverr image", CoverImage);
-    console.log("Avatar:", Avatar);
-    try {
-        validateRequiredFields([
-            { value: name, name: "Name" },
-            { value: email, name: "Email" },
-            { value: password, name: "Password" },
-            { value: username, name: "Username" },
-            { value: confirm_password, name: "confirm_password" }
-        ]);
-        if (password !== confirm_password) {
-            throw new ApiError(400, "Password and confirm password do not match");
-        }
-        const exisingUser = await User.findOne({ email });
-        if (exisingUser) {
-            throw new ApiError(400, "User with this email already exists");
-        }
-        const user = await User.create({ name, email, password, username, avatar: Avatar, coverImage: CoverImage });
-        console.log("User created in the database:", user);
-        res.status(201).json(new ApiResponse(201, user, "User created successfully"));
-    } catch (error) {
-        console.error("Error during user creation:", error);
-        res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
+    validateRequiredFields([
+        { value: name, name: "Name" },
+        { value: email, name: "Email" },
+        { value: password, name: "Password" },
+        { value: username, name: "Username" },
+        { value: confirm_password, name: "confirm_password" }
+    ]);
+    if (password !== confirm_password) {
+        throw new ApiError(400, "Password and confirm password do not match");
     }
+    const exisingUser = await User.findOne({ email });
+    if (exisingUser) {
+        throw new ApiError(400, "User with this email already exists");
+    }
+    const user = await User.create({ name, email, password, username, avatar: Avatar, coverImage: CoverImage });
+    res.status(201).json(new ApiResponse(201, user, "User created successfully"));
 });
 
 
@@ -92,7 +82,7 @@ export const LoginUser = asyncHandler(async (req, res) => {
     res.status(200)
         .cookie("refreshToken", refreshToken, option)
         .cookie("accessToken", accessToken, option)
-        .json(new ApiResponse(200, {}, "User logged in successfully"))
+        .json(new ApiResponse(200, accessToken, "User logged in successfully"))
 })
 
 export const LogoutUser = asyncHandler(async (req, res) => {
@@ -104,8 +94,9 @@ export const LogoutUser = asyncHandler(async (req, res) => {
 
 
 export const GetNewAccessToken = asyncHandler(async (req, res) => {
-    const { incomingRefreshToken } = req.cookies.refreshToken || req.body
-    console.log("incomingRefreshToken", incomingRefreshToken);
+
+    const incomingRefreshToken = req.cookies.refreshToken || req.body
+
 
     if (!incomingRefreshToken) {
         throw new ApiError(401, "Unauthorized")
@@ -145,11 +136,25 @@ export const changeCurrentPassword = asyncHandler(async (req, res) => {
 })
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id).select("-password -refreshToken")
-    if (!user) {
-        throw new ApiError(404, "User not found")
+
+    // use aggration pipleline
+    const user = await User.aggregate([
+        { $match: { _id: req.user._id } },
+        {
+            $lookup: {
+                from: "dogs",
+                localField: "_id",
+                foreignField: "owner",
+                as: "dogs"
+            }
+
+        },
+
+    ])
+    if (user.length === 0) {
+        throw new ApiError(404, "User not found");
     }
-    res.status(200).json(new ApiResponse(200, user, "User fetched successfully"))
+    res.status(200).json(new ApiResponse(200, user[0], "User fetched successfully"))
 })
 
 export const UpdateUserProfile = asyncHandler(async (req, res) => {
@@ -163,7 +168,7 @@ export const UpdateUserProfile = asyncHandler(async (req, res) => {
     if (!user) {
         throw new ApiError(404, "User not found")
     }
-    
+
     const avatar = req.files ? await uploadImage(req.files.newAvatar[0].path) : user.avatar
     const coverImage = req.files ? await uploadImage(req.files.newCoverImage[0].path) : user.coverImage
     user.name = name
