@@ -117,6 +117,9 @@ export const GetNewAccessToken = asyncHandler(async (req, res) => {
 
 export const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { current_password, new_password, confirm_password } = req.body;
+
+    console.log(req.body);
+
     validateRequiredFields([
         { value: current_password, name: "Current Password" },
         { value: new_password, name: "New Password" },
@@ -126,7 +129,8 @@ export const changeCurrentPassword = asyncHandler(async (req, res) => {
         throw new ApiError(400, "New password and confirm password do not match")
     }
     const user = await User.findById(req.user._id)
-    const isMatch = user.CheckPassword(current_password)
+    const isMatch = await user.CheckPassword(current_password)
+    console.log(isMatch);
     if (!isMatch) {
         throw new ApiError(400, "Invalid current password")
     }
@@ -163,7 +167,7 @@ export const UpdateUserProfile = asyncHandler(async (req, res) => {
     // if user then update the user profile
     // save the user
     // if not user then throw error
-    const { name } = req.body
+    const { name, description, phone, location } = req.body
     const user = await User.findById(req.user._id)
     if (!user) {
         throw new ApiError(404, "User not found")
@@ -173,7 +177,10 @@ export const UpdateUserProfile = asyncHandler(async (req, res) => {
     const coverImage = req.files ? await uploadImage(req.files.newCoverImage[0].path) : user.coverImage
     user.name = name
     user.avatar = avatar
+    user.description = description
+    user.phone = phone
     user.coverImage = coverImage
+    user.location = location
     await user.save()
     res.status(200).json(new ApiResponse(200, user, "User profile updated successfully"))
 })

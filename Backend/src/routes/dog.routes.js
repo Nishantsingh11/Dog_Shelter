@@ -12,7 +12,7 @@ router.route("/add-dog").post(
     authMiddleWare,
     AddNewDog
 )
-router.route("/get-dog/:id").get(GetDog)
+router.route("/get-dog/:id").get(authMiddleWare,GetDog)
 router.route("/update-dog/:id").patch(authMiddleWare, UpdateDogDetails)
 router.route("/delete/:id").delete(authMiddleWare, DeleteDog)
 router.route("/update-adopted-status/:id").patch(authMiddleWare, UpdateAdoptedStatus)

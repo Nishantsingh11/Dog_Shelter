@@ -15,6 +15,10 @@ const UserSchema = new Schema({
         trim: true,
         lowercase: true
     },
+    description: {
+        type: String,
+        trim: true
+    },
     username: {
         type: String,
         required: true,
@@ -32,6 +36,14 @@ const UserSchema = new Schema({
         type: String,
         required: true,
         trim: true
+    },
+    location: {
+        type: String,
+    },
+    phone: {
+        type: String,
+        maxlength: 10,
+        minlength: 10  
     },
     refreshToken: {
         type: String,

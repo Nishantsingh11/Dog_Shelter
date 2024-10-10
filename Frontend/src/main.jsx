@@ -13,6 +13,10 @@ import store from './Store/store.js'
 import MyDogs from './Components/Layout/YourDogs/index.jsx'
 import TokenRefreshPage from './Components/Layout/NewRefreshToken/index.jsx'
 import DogNotFound from './Components/Layout/Common/NotFound.jsx'
+import { TermsAndConditions } from './Components/Layout/Common/Term_conditaion.jsx'
+import { PrivacyPolicy } from './Components/Layout/Common/Policy.jsx'
+import AboutSection from './Components/Layout/Common/About.jsx'
+import EnhancedChatPage from './Components/Chat/ChatBox.jsx'
 
 const router = createBrowserRouter([
   {
@@ -44,6 +48,10 @@ const router = createBrowserRouter([
         element: <Profile />
       },
       {
+        path: "/about",
+        element: <AboutSection />
+      },
+      {
         path: "/admin/dogs",
         element: <MyDogs />
       },
@@ -52,10 +60,21 @@ const router = createBrowserRouter([
         element: <TokenRefreshPage />
       },
       {
+        path: "/terms",
+        element: <TermsAndConditions />
+      },
+      {
+        path: "policy",
+        element: <PrivacyPolicy />
+      },
+      {
         path: "*",
-        element:<DogNotFound />
-      }
-
+        element: <DogNotFound />
+      },
+      {
+        path: "/chat/:receiverId",
+        element: <EnhancedChatPage />
+      },
     ]
   }
 ])

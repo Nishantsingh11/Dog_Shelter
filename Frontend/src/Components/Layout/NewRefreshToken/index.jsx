@@ -3,15 +3,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDispatch } from 'react-redux'
 import { newAccessToken } from "@/Store/Slice/Auth.slice"
+import { useNavigate } from "react-router-dom"
 
 export default function TokenRefreshPage() {
     const dispatch = useDispatch()
-    
-    const refreshToken = (e) => {
-        e.preventDefault()
-        dispatch(newAccessToken())
-    }
+    const navigate = useNavigate()
 
+    const refreshToken = async (e) => {
+        e.preventDefault()
+        await dispatch(newAccessToken()).unwrap()
+        navigate("/")
+
+    }
     return (
         <div className="container mx-auto p-4 max-w-2xl">
             <h1 className="text-3xl font-bold mb-6 text-center">Token Refresh Page</h1>
@@ -30,7 +33,7 @@ export default function TokenRefreshPage() {
                                 Click the button below to refresh your token. This process simulates a token refresh and may take a few seconds.
                             </p>
                             <Button
-                                type="button" 
+                                type="button"
                                 onClick={refreshToken}
                                 className="w-full"
                             >

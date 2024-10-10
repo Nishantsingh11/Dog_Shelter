@@ -38,7 +38,11 @@ const DogSchema = new Schema({
         type: Date,
         required: true
     },
-
+    Adoption_Fee: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     age: {
         type: Number,
         required: true,

@@ -4,6 +4,8 @@ import Footer from "./Components/Layout/Common/Footer"
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { setLoginState } from "@/Store/Slice/Auth.slice"
+import { Toaster } from "@/components/ui/toaster"
+
 
 function App() {
   const dispatch = useDispatch()
@@ -26,6 +28,8 @@ function App() {
       <main>
         <Outlet />
       </main>
+      <Toaster />
+
       <Footer />
     </>
   )

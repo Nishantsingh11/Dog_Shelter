@@ -19,7 +19,8 @@ export const registerUser = createAsyncThunk(
                 formData.append(key, credentials[key])
             }
             const response = await RegisterUserr(formData)
-            console.log("response", response);
+            console.log(response);
+            
 
             return response
         }
@@ -34,9 +35,11 @@ export const loginUser = createAsyncThunk(
             const response = await LoginUser(credentials)
             localStorage.setItem("accessToken", response.data)
             return response
+            
 
         }
         catch (error) {
+            console.log(error)
             return rejectWithValue(error)
         }
     }
@@ -49,6 +52,7 @@ export const logoutUser = createAsyncThunk(
             return response
         }
         catch (error) {
+            console.log(error);
             return rejectWithValue(error)
         }
     }

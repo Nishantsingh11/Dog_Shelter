@@ -5,16 +5,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { logoutUser, setLoginState } from '@/Store/Slice/Auth.slice';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/hooks/use-toast"
+
 const Header = ({ loginstatus }) => {
-    console.log("loginstatus", loginstatus);
+    const {toast} = useToast()
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
     const handleLogout = async () => {
         await dispatch(logoutUser()).unwrap()
         localStorage.removeItem("accessToken")
+        toast({
+            title: "Logged out successfully",
+            type: "success",
+        })
         dispatch(setLoginState(false)); // Manually set login state to false
-
         navigate('/')
     }
     return (

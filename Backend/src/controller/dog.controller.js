@@ -34,8 +34,8 @@ const AddNewDog = asyncHandler(async (req, res) => {
     ])
     // upload multiple images
     const files = req.files;
-    console.log("req",req);
-    
+    console.log("req", req);
+
     console.log("files", files);
     console.log("req.files", req.files);
 
@@ -103,7 +103,9 @@ const GetDogs = asyncHandler(async (req, res) => {
 const GetDog = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const objectId = new mongoose.Types.ObjectId(id); // Convert to ObjectId
+    const userId = new mongoose.Types.ObjectId(req.user._id); // Convert to ObjectId
 
+    console.log("userId", userId);
 
     const dog = await Dog.aggregate([
         { $match: { _id: objectId } },
@@ -141,16 +143,34 @@ const GetDog = asyncHandler(async (req, res) => {
 
                 owner: {
                     name: 1,
-                    email: 1
+                    email: 1,
+                    _id: 1
                 }
             }
         }
     ])
+    let isEditable = false
+    const DogOwner = await Dog.findById(id)
+    console.log("DogOwner", DogOwner.owner);
 
+
+    if (DogOwner.owner.equals(userId)) {
+        isEditable = true
+    }
+    else {
+        console.log("from error");
+
+        isEditable = false
+    }
+    console.log(isEditable);
     if (dog.length === 0) {
         notFoundError("Dog not found")
     }
-    res.status(200).json(new ApiResponse(200, dog[0], "Dog fetched successfully"))
+    const dogDetails = {
+        dog: dog[0],
+        isEditable: isEditable
+    }
+    res.status(200).json(new ApiResponse(200, dogDetails, "Dog fetched successfully"))
 
 })
 const UpdateDogDetails = asyncHandler(async (req, res) => {

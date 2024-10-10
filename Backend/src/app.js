@@ -2,6 +2,7 @@ import express from 'express';
 import cors from "cors"
 import userRouter from './routes/user.routes.js'
 import dogRouter from './routes/dog.routes.js'
+import messageRouter from './routes/message.routes.js'
 import cookieParser from "cookie-parser"
 import bodyParser from "body-parser"
 const app = express()
@@ -38,7 +39,7 @@ app.use((err, req, res, next) => {
 
 app.use("/api/v1/user", userRouter)
 app.use("/api/v1/dog", dogRouter)
-
+app.use("/api/v1/chat",messageRouter)
 app.get('/test', (req, res) => {
     console.log("Received test request");
     res.json({ message: "Test successful" });

@@ -3,9 +3,6 @@ import fs from "fs"
 import dotenv from "dotenv"
 dotenv.config()
 
-console.log("username", process.env.CLOUDNARY_USER_NAME);
-console.log("key", process.env.CLOUDNARY_API_KEY);
-console.log("secteer", process.env.CLOUDNARY_API_SECRET);
 cloudinary.config({
 
     cloud_name: process.env.CLOUDNARY_USER_NAME,

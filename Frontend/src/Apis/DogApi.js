@@ -6,6 +6,4 @@ const UpdateDog = (id, data) => makeApiCall(`/dog/update-dog/${id}`, "PATCH", da
 const DeleteDog = (id) => makeApiCall(`/dog/delete/${id}`, "DELETE")
 const UpdateAdoptedStatus = (id, data) => makeApiCall(`/dog/update-adopted-status/${id}`, "PATCH", data)
 const GetUserDogs = () => makeApiCall("/dog/get-user-dogs", "GET")
-console.log(GetUserDogs);
-
 export { AddNewDog, GetDogs, GetDogById, UpdateDog, DeleteDog,UpdateAdoptedStatus,GetUserDogs }
